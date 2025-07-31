@@ -1,0 +1,103 @@
+
+body {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  background: linear-gradient(to bottom, #1e1e2f, #2c2c44);
+  color: #fdfdfd;
+  background-attachment: fixed;
+  min-height: 100vh; 
+  display: flex; 
+  flex-direction: column; 
+  
+  header {
+    background-color: rgba(0, 0, 0, 0.8);
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 2rem;
+    color: #fff5d7;
+    text-shadow: 0 0 10px #d4af37;
+  }
+  
+  .worlds-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .world-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    text-align: center;
+    padding-bottom: 1rem;
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .world-card:hover {
+    transform: scale(1.03);
+  }
+  
+  .world-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .world-card h2 {
+    margin-top: 1rem;
+    color: #ffe;
+  }
+  
+  .world-card p {
+    padding: 0 1rem;
+    font-size: 1rem;
+    color: #ddd;
+    flex-grow: 1;
+    margin-bottom: 1rem;
+  }
+  
+  .visit-button {
+    display: inline-block;
+    margin-top: auto;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    align-self: center;
+  }
+  
+  .visit-button:hover {
+    box-shadow: 0 0 10px #fff;
+  }
+  
+  /*для кнопок */
+  .blue {
+    background-color: #1a73e8;
+  }
+  .pink {
+    background-color: #e91e63;
+  }
+  .lightblue {
+    background-color: #03a9f4;
+  }
+  .green {
+    background-color: #4caf50;
+  }
+  
+ footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #aaa;
+    margin-top: auto;
+    font-size: 0.9rem;
+}

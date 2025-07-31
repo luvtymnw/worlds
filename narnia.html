@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Нарния</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #facc15;
+      font-family: 'Georgia', serif;
+    }
+    .nav-link {
+      color: white;
+      transition: color 0.2s;
+    }
+    .nav-link:hover {
+      color: #fbbf24;
+    }
+    .tag {
+      background-color: #f97316;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+    }
+    .character-card img {
+      height: 220px;
+      object-fit: cover;
+      width: 100%;
+      border-radius: 12px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+    .modal-content {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      margin: 5% auto;
+      padding: 30px;
+      border: 2px solid #facc15;
+      border-radius: 0.5rem;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .close {
+      color: #facc15;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      top: 15px;
+      right: 20px;
+    }
+    .close:hover {
+      color: white;
+    }
+    .modal h2 {
+      color: #facc15;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    .modal img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .modal p {
+      line-height: 1.8;
+      margin-bottom: 15px;
+      color: #e2e8f0;
+    }
+    .modal-details {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 0.5rem;
+      margin-top: 20px;
+    }
+    .modal-details h3 {
+      color: #facc15;
+      margin-bottom: 15px;
+    }
+    .modal-details ul {
+      list-style: none;
+      padding: 0;
+    }
+    .modal-details li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(250, 204, 21, 0.2);
+      color: #e2e8f0;
+    }
+    .modal-details li:last-child {
+      border-bottom: none;
+    }
+    .place-card, .character-card {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0.5rem;
+    }
+    .place-card:hover, .character-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(250, 204, 21, 0.3);
+      border: 1px solid #facc15;
+    }
+    .place-card::before, .character-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.1), transparent);
+      transition: left 0.5s;
+    }
+    .place-card:hover::before, .character-card:hover::before {
+      left: 100%;
+    }
+    .click-hint {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(250, 204, 21, 0.8);
+      color: black;
+      padding: 5px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .place-card:hover .click-hint, .character-card:hover .click-hint {
+      opacity: 1;
+    }
+    .map-img {
+      cursor: zoom-in;
+      transition: transform 0.8s ease;
+    }
+    .map-img.zoomed {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1.3);
+      z-index: 1000;
+      cursor: zoom-out;
+      max-width: none;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      transition: transform 0.8s ease;
+    }
+  </style>
+</head>
+<body>
+  <header class="p-4 flex justify-between items-center border-b border-gray-700">
+    <div class="text-2xl font-bold text-yellow-400">НАРНИЯ</div>
+    <nav class="space-x-6">
+      <a href="#home" class="nav-link">Главная</a>
+      <a href="#map" class="nav-link">Карта</a>
+      <a href="#places" class="nav-link">Места</a>
+      <a href="#characters" class="nav-link">Обитатели</a>
+    </nav>
+  </header>
+
+  <section id="home" class="h-screen flex flex-col items-center justify-center text-center">
+    <h1 class="text-6xl font-bold">НАРНИЯ</h1>
+    <p class="text-xl text-gray-300 mt-4">Мир, куда ведёт любой шкаф</p>
+    <div class="mt-6 space-x-4">
+      <div class="mt-6">
+        <button
+          onclick="document.getElementById('map').scrollIntoView({behavior: 'smooth'})"
+          class="px-8 py-3 bg-yellow-500 text-gray-900 font-bold rounded-lg shadow-md hover:bg-yellow-600 transition-all duration-300 hover:shadow-lg active:scale-95"
+        >
+          К миру
+        </button>
+      </div>
+  </section>
+
+  <!-- Карта Нарнии -->
+  <section id="map" class="p-12 text-center">
+    <h2 class="text-4xl mb-6">Карта Нарнии</h2>
+    <p class="text-gray-300 mb-6">Исследуйте волшебные земли через интерактивную карту</p>
+    <div class="flex justify-center">
+      <img src="images/nariamap.jpg" alt="Карта Нарнии" class="rounded shadow-xl max-w-4xl map-img" style="cursor: zoom-in; transition: transform 0.3s ease;">
+    </div>
+  </section>
+
+  <!-- Места -->
+  <section id="places" class="p-12 bg-gray-900">
+    <h2 class="text-4xl mb-4">Главные места</h2>
+    <p class="text-gray-300 mb-6">Откройте для себя знаковые локации Нарнии</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gray-800 p-4 rounded-[20px] place-card" onclick="openPlaceModal('cair')">
+        <div class="click-hint">👆 Клик</div>
+        <span class="tag">Замки</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Кэр-Паравель</h3>
+        <p class="text-gray-300 mt-1">Величественный замок четырёх тронов, возвышающийся над морем.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] place-card" onclick="openPlaceModal('lantern')">
+        <div class="click-hint">👆 Клик</div>
+        <span class="tag">Памятные места</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Фонарный пустырь</h3>
+        <p class="text-gray-300 mt-1">Место встречи двух миров у волшебного фонаря.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] place-card" onclick="openPlaceModal('beavers')">
+        <div class="click-hint">👆 Клик</div>
+        <span class="tag">Дома друзей</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Плотина бобров</h3>
+        <p class="text-gray-300 mt-1">Уютный дом говорящих бобров на реке — символ дружбы.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] place-card" onclick="openPlaceModal('stone')">
+        <div class="click-hint">👆 Клик</div>
+        <span class="tag">Священные места</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Каменный стол</h3>
+        <p class="text-gray-300 mt-1">Древний алтарь, где Аслан принёс себя в жертву ради спасения Эдмунда.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Обитатели -->
+  <section id="characters" class="p-12">
+    <h2 class="text-4xl mb-4">Обитатели Нарнии</h2>
+    <p class="text-gray-300 mb-6">Познакомьтесь с героями и созданиями волшебного мира</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('aslan')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/aslan.jpg" alt="Аслан" class="rounded">
+        <span class="tag mt-2 inline-block">Львы</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Аслан</h3>
+        <p class="text-gray-300 mt-1">Великий лев, воплощение добра, мудрости и справедливости.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('peter')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/peter.jpg" alt="Питер Певенси" class="rounded">
+        <span class="tag mt-2 inline-block">Люди</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Питер Певенси</h3>
+        <p class="text-gray-300 mt-1">Старший из детей Певенси, Верховный король Нарнии.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('edmund')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/edm.jpg" alt="Эдмунд Певенси" class="rounded">
+        <span class="tag mt-2 inline-block">Люди</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Эдмунд Певенси</h3>
+        <p class="text-gray-300 mt-1">Справедливый судья, мудрый дипломат и воин.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('susan')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/sui.jpg" alt="Сьюзен Певенси" class="rounded">
+        <span class="tag mt-2 inline-block">Люди</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Сьюзен Певенси</h3>
+        <p class="text-gray-300 mt-1">Королева Сьюзен Кроткая, известная своей добротой и мудростью.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('lucy')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/lyci.jpg" alt="Люси Певенси" class="rounded">
+        <span class="tag mt-2 inline-block">Люди</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Люси Певенси</h3>
+        <p class="text-gray-300 mt-1">Королева Люси Отважная, первая из детей, кто открыл Нарнию.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('witch')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/whi.jpg" alt="Белая Колдунья" class="rounded">
+        <span class="tag mt-2 inline-block">Волшебники</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Белая Колдунья</h3>
+        <p class="text-gray-300 mt-1">Джадис, королева Нарнии, наложившая вечную зиму на страну.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('centaurs')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/кент.jpg" alt="Кентавры" class="rounded">
+        <span class="tag mt-2 inline-block">Мифические существа</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Кентавры</h3>
+        <p class="text-gray-300 mt-1">Благородные воины с телом лошади и торсом человека, верные союзники Аслана.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('tumnus')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/mist.jpg" alt="Мистер Тумнус" class="rounded">
+        <span class="tag mt-2 inline-block">Говорящие звери</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Мистер Тумнус</h3>
+        <p class="text-gray-300 mt-1">Добрый фавн, первый друг Люси в Нарнии, любитель музыки и танцев.</p>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-[20px] character-card" onclick="openCharacterModal('animals')">
+        <div class="click-hint">👆 Клик</div>
+        <img src="images/anim.jpg" alt="Говорящие звери" class="rounded">
+        <span class="tag mt-2 inline-block">Говорящие звери</span>
+        <h3 class="text-xl font-bold text-yellow-300 mt-2">Говорящие звери</h3>
+        <p class="text-gray-300 mt-1">Мудрые создания Нарнии, способные говорить и мыслить как люди.</p>
+      </div>
+    </div>
+  </section>
+
+  
+  <div id="placeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closePlaceModal()">&times;</span>
+      <div id="placeModalContent"></div>
+    </div>
+  </div>
+
+  
+  <div id="characterModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeCharacterModal()">&times;</span>
+      <div id="characterModalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // Данные для мест
+    const placesData = {
+      cair: {
+        title: "Кэр-Паравель",
+        image: "images/castle.jpg",
+        description: "Величественный замок четырёх тронов, возвышающийся над морем. Резиденция королей и королев Нарнии, символ власти и величия.",
+        details: {
+          "Местоположение": "Восточное побережье Нарнии",
+          "Архитектура": "Готический замок с башнями",
+          "Особенности": "Четыре трона, библиотека, зал для пиров",
+          "История": "Построен первыми королями Нарнии",
+          "Значение": "Символ единства и власти"
+        }
+      },
+      lantern: {
+        title: "Фонарный пустырь",
+        image: "images/narnia.jpg",
+        description: "Место встречи двух миров у волшебного фонаря. Именно здесь Люси впервые встретила мистера Тумнуса и открыла для себя Нарнию.",
+        details: {
+          "Местоположение": "В лесу между мирами",
+          "Особенности": "Волшебный фонарь, всегда горящий",
+          "История": "Место первого появления в Нарнии",
+          "Значение": "Символ перехода между мирами",
+          "Первая встреча": "Люси и мистер Тумнус"
+        }
+      },
+      beavers: {
+        title: "Плотина бобров",
+        image: "images/anim.jpg",
+        description: "Уютный дом говорящих бобров на реке — символ дружбы и гостеприимства. Место, где дети Певенси получили важную информацию о Нарнии.",
+        details: {
+          "Жители": "Мистер и миссис Бобр",
+          "Местоположение": "На реке в лесу",
+          "Особенности": "Плотина, уютный дом, гостеприимство",
+          "Роль": "Информационный центр для детей",
+          "Атмосфера": "Тёплая и дружелюбная"
+        }
+      },
+      stone: {
+        title: "Каменный стол",
+        image: "images/table.jpg",
+        description: "Древний алтарь, где Аслан принёс себя в жертву ради спасения Эдмунда. Место величайшей жертвы и последующего воскресения.",
+        details: {
+          "Местоположение": "В горах Нарнии",
+          "История": "Место жертвы Аслана",
+          "Значение": "Символ жертвы и искупления",
+          "События": "Распятие и воскресение Аслана",
+          "Магия": "Древние заклинания"
+        }
+      }
+    };
+
+    // Данные для персонажей
+    const charactersData = {
+      aslan: {
+        title: "Аслан",
+        image: "images/aslan.jpg",
+        category: "Львы",
+        description: "Великий лев, воплощение добра, мудрости и справедливости. Создатель Нарнии и её защитник.",
+        details: {
+          "Роль": "Создатель и защитник Нарнии",
+          "Способности": "Воскрешение, исцеление, мудрость",
+          "Характер": "Мудрый, справедливый, любящий",
+          "История": "Принёс себя в жертву за Эдмунда",
+          "Значение": "Христианский символ"
+        }
+      },
+      peter: {
+        title: "Питер Певенси",
+        image: "images/peter.jpeg",
+        category: "Люди",
+        description: "Старший из детей Певенси, Верховный король Нарнии. Храбрый воин и мудрый правитель.",
+        details: {
+          "Титул": "Верховный король Питер Великолепный",
+          "Характер": "Храбрый, ответственный, справедливый",
+          "Роль": "Защитник Нарнии и своей семьи",
+          "Оружие": "Меч Риндал",
+          "Достижения": "Победил Белую Колдунью"
+        }
+      },
+      edmund: {
+        title: "Эдмунд Певенси",
+        image: "images/edm.jpg",
+        category: "Люди",
+        description: "Справедливый судья, мудрый дипломат и воин. Прошёл путь от предателя до героя.",
+        details: {
+          "Титул": "Король Эдмунд Справедливый",
+          "Характер": "Справедливый, мудрый, раскаявшийся",
+          "История": "Предал брата и сестёр, но искупил вину",
+          "Роль": "Дипломат и судья",
+          "Развитие": "От эгоизма к самопожертвованию"
+        }
+      },
+      susan: {
+        title: "Сьюзен Певенси",
+        image: "images/sui.jpg",
+        category: "Люди",
+        description: "Королева Сьюзен Кроткая, известная своей добротой и мудростью. Защитница и миротворец.",
+        details: {
+          "Титул": "Королева Сьюзен Кроткая",
+          "Характер": "Добрая, мудрая, заботливая",
+          "Роль": "Миротворец и защитница",
+          "Оружие": "Лук и стрелы",
+          "Особенность": "Практичность и здравый смысл"
+        }
+      },
+      lucy: {
+        title: "Люси Певенси",
+        image: "images/lyci.jpg",
+        category: "Люди",
+        description: "Королева Люси Отважная, первая из детей, кто открыл Нарнию. Обладает чистой верой и отвагой.",
+        details: {
+          "Титул": "Королева Люси Отважная",
+          "Характер": "Отважная, вера, чистота сердца",
+          "Роль": "Первооткрывательница Нарнии",
+          "Особенность": "Видит Аслана, когда другие не видят",
+          "Вера": "Никогда не сомневается в Аслане"
+        }
+      },
+      witch: {
+        title: "Белая Колдунья",
+        image: "images/whi.jpg",
+        category: "Волшебники",
+        description: "Джадис, королева Нарнии, наложившая вечную зиму на страну. Главный антагонист.",
+        details: {
+          "Происхождение": "Дочь Адама и Лилит",
+          "Магия": "Лёд, снег, превращения",
+          "Характер": "Жестокая, властная, коварная",
+          "Правление": "100 лет вечной зимы",
+          "Судьба": "Побеждена Асланом"
+        }
+      },
+      centaurs: {
+        title: "Кентавры",
+        image: "images/кент.jpg",
+        category: "Мифические существа",
+        description: "Благородные воины с телом лошади и торсом человека, верные союзники Аслана.",
+        details: {
+          "Внешность": "Тело лошади, торс человека",
+          "Характер": "Благородные, мудрые, верные",
+          "Роль": "Военачальники и советники",
+          "Мастерство": "Стрельба из лука, астрология",
+          "Верность": "Аслану и королям Нарнии"
+        }
+      },
+      tumnus: {
+        title: "Мистер Тумнус",
+        image: "images/mist.jpg",
+        category: "Говорящие звери",
+        description: "Добрый фавн, первый друг Люси в Нарнии, любитель музыки и танцев.",
+        details: {
+          "Внешность": "Фавн с козлиными ногами",
+          "Характер": "Добрый, музыкальный, раскаявшийся",
+          "История": "Планировал предать Люси, но раскаялся",
+          "Таланты": "Музыка, танцы, рассказывание историй",
+          "Дружба": "Первый друг Люси в Нарнии"
+        }
+      },
+      animals: {
+        title: "Говорящие звери",
+        image: "images/anim.jpg",
+        category: "Говорящие звери",
+        description: "Мудрые создания Нарнии, способные говорить и мыслить как люди.",
+        details: {
+          "Виды": "Львы, лошади, бобры, мыши, орлы",
+          "Особенность": "Говорят и мыслят как люди",
+          "Роль": "Жители и защитники Нарнии",
+          "Мудрость": "Древние знания и традиции",
+          "Верность": "Аслану и королям"
+        }
+      }
+    };
+
+    
+    function openPlaceModal(placeId) {
+      const place = placesData[placeId];
+      const modal = document.getElementById('placeModal');
+      const content = document.getElementById('placeModalContent');
+      
+      content.innerHTML = `
+        <h2>${place.title}</h2>
+        <img src="${place.image}" alt="${place.title}">
+        <p>${place.description}</p>
+        <div class="modal-details">
+          <h3>📋 Детали</h3>
+          <ul>
+            ${Object.entries(place.details).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      
+      modal.style.display = 'block';
+    }
+
+    function closePlaceModal() {
+      document.getElementById('placeModal').style.display = 'none';
+    }
+
+    
+    function openCharacterModal(characterId) {
+      const character = charactersData[characterId];
+      const modal = document.getElementById('characterModal');
+      const content = document.getElementById('characterModalContent');
+      
+      content.innerHTML = `
+        <h2>${character.title}</h2>
+        <img src="${character.image}" alt="${character.title}">
+        <p><strong>Категория:</strong> ${character.category}</p>
+        <p>${character.description}</p>
+        <div class="modal-details">
+          <h3>⚡ Характеристики</h3>
+          <ul>
+            ${Object.entries(character.details).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+      
+      modal.style.display = 'block';
+    }
+
+    function closeCharacterModal() {
+      document.getElementById('characterModal').style.display = 'none';
+    }
+
+    
+    window.onclick = function(event) {
+      const placeModal = document.getElementById('placeModal');
+      const characterModal = document.getElementById('characterModal');
+      
+      if (event.target === placeModal) {
+        closePlaceModal();
+      }
+      if (event.target === characterModal) {
+        closeCharacterModal();
+      }
+    }
+
+    
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closePlaceModal();
+        closeCharacterModal();
+        
+        const mapImg = document.querySelector('.map-img');
+        if (mapImg && mapImg.classList.contains('zoomed')) {
+          mapImg.classList.remove('zoomed');
+        }
+      }
+    });
+
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      const mapImg = document.querySelector('.map-img');
+      if (mapImg) {
+        mapImg.addEventListener('click', function() {
+          this.classList.toggle('zoomed');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

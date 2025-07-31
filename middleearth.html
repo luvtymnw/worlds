@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Средиземье</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Georgia', serif;
+      background: radial-gradient(circle at center, #0f2d1c 0%, #0a1a10 100%);
+      color: #fbeec1;
+    }
+
+    header {
+      background: url('images/middleearth.jpg') no-repeat center center/cover;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 4em;
+      margin: 0;
+      color: #ffd700;
+    }
+
+    header p {
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+
+    .btn {
+      background-color: #14532d;
+      border: none;
+      color: white;
+      padding: 15px 25px;
+      font-size: 1em;
+      margin-top: 30px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0e3b21;
+      transform: translateY(-2px);
+    }
+
+    section {
+      padding: 60px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section-title {
+      font-size: 2.5em;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #ffd700;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 40px;
+    }
+
+    .map-container {
+      background-color: #000;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .map {
+      width: 90%;
+      max-width: 800px;
+      height: 400px;
+      background-color: #222;
+      background-image: url('images/средиз.jpg');
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #444;
+      border-radius: 5px;
+    }
+
+    .places, .characters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: #2b2520;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #000;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px #ffd700;
+    }
+
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card h3 {
+      margin: 15px 20px 10px;
+    }
+
+    .card p {
+      margin: 0 20px 20px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(15, 15, 15, 0.85);
+    }
+
+    .modal-content {
+      background-color: #1f1b17;
+      margin: 10% auto;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      color: #fbeec1;
+      position: relative;
+      box-shadow: 0 0 20px #000;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      color: #ffd700;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 3em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Средиземье</h1>
+    <p>Мир волшебства, древних легенд и бесконечных приключений</p>
+    <a href="#map" class="btn">Исследовать мир</a>
+  </header>
+
+  <section id="map">
+    <div class="section-title">Карта Средиземья</div>
+    <div class="section-subtitle">Исследуйте просторы Средиземья: от зелёных холмов Шира до мрачных земель Мордора</div>
+    <div class="map-container">
+      <div class="map"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">Главные места</div>
+    <div class="section-subtitle">Откройте для себя легендарные локации Средиземья</div>
+    <div class="places" id="places"></div>
+  </section>
+
+  <section>
+    <div class="section-title">Персонажи</div>
+    <div class="section-subtitle">Знакомьтесь с героями и антагонистами Средиземья</div>
+    <div class="characters" id="characters"></div>
+  </section>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-description"></p>
+    </div>
+  </div>
+
+  <script>
+    const places = [
+      { title: "Шир", img: "hire.jpg", desc: "Зелёные холмы, уютные норы и тёплая атмосфера — родина хоббитов.", full: "Шир — сердце хоббитского мира, место покоя и простоты, где ценят хороший обед и тишину. Здесь начинается великое путешествие Фродо Бэггинса." },
+      { title: "Ривенделл", img: "лот.jpg", desc: "Укрытое среди гор убежище эльфов.", full: "Ривенделл — дом Элронда, наполненный эльфийской мудростью, красотой и музыкой. Здесь было основано Братство Кольца." },
+      { title: "Мордор", img: "мордор.jpg", desc: "Зловещая земля Саурона.", full: "Мордор — выжженная земля зла, где находится гора Ородруин и крепость Барад-дур. Сюда Фродо нёс Кольцо Всевластья." },
+      { title: "Гондор", img: "гондор.jpg", desc: "Могучее королевство людей.", full: "Гондор — одна из главных держав людей в Средиземье, символ чести и мужества, его столица — Минас Тирит." },
+      { title: "Лотлориэн", img: "лот.jpg", desc: "Зачарованный лес эльфов.", full: "Лотлориэн — волшебный лес под покровом Галадриэли, где время словно замедляется и царит вечная весна." },
+      { title: "Изенгард", img: "hire.jpg", desc: "Крепость мага Сарумана.", full: "Изенгард — изначально центр знаний, превращён в механизированную цитадель. Отсюда Саруман направил свои армии на Рохан." }
+    ];
+
+    const characters = [
+      { title: "Фродо Бэггинс", img: "фродо.jpg", desc: "Хоббит, носитель Кольца.", full: "Фродо Бэггинс — скромный хоббит, чей путь стал решающим в судьбе Средиземья. Он нёс Кольцо к Роковой горе, несмотря на страх и искушение." },
+      { title: "Сэмвайз Гэмджи", img: "сэм.jpg", desc: "Преданный друг Фродо.", full: "Сэм — символ верности и отваги. Без него Фродо не смог бы завершить путь. Сэм всегда был рядом, даже в самые мрачные часы." },
+      { title: "Гэндальф", img: "генд.jpg", desc: "Мудрый маг.", full: "Гэндальф — один из майар, посланник воли Валар. Помогал народам Средиземья бороться с тьмой, возглавлял Братство Кольца." },
+      
+      { title: "Леголас", img: "лего.jpg", desc: "Эльф-лучник.", full: "Леголас из Лихолесья — грациозный и смертоносный воин, ставший другом гному Гимли. Его зоркость и ловкость помогали Братству." },
+      { title: "Гимли", img: "гимли.jpg", desc: "Гном-воин.", full: "Гимли — сын Глоина, представитель народа гномов. Принёс честь своему роду, сражаясь с орками и защищая друзей." },
+      { title: "Галадриэль", img: "гала.jpg", desc: "Эльфийская владычица.", full: "Галадриэль — одна из старейших и мудрейших эльфов. Она владеет зеркалом пророчества и хранит один из Трёх Колец." },
+      { title: "Голлум", img: "голлум.jpg", desc: "Жертва Кольца.", full: "Голлум (Смеагол) — трагическая фигура, искажённая Кольцом. Его одержимость стала ключом к уничтожению артефакта." }
+    ];
+
+    function renderCards(data, containerId) {
+      const container = document.getElementById(containerId);
+      data.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <img src="images/${item.img}" alt="${item.title}">
+          <h3>${item.title}</h3>
+          <p>${item.desc}</p>
+        `;
+        div.addEventListener('click', () => openModal(item.title, item.full));
+        container.appendChild(div);
+      });
+    }
+
+    function openModal(title, text) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-description').innerText = text;
+      document.getElementById('modal').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    
+    window.addEventListener('keydown', function(event) {
+      if(event.key === "Escape") {
+        closeModal();
+      }
+    });
+
+    
+    const modal = document.getElementById('modal');
+    modal.addEventListener('click', function(event) {
+      if(event.target === modal) {
+        closeModal();
+      }
+    });
+
+    renderCards(places, 'places');
+    renderCards(characters, 'characters');
+  </script>
+</body>
+</html>
